@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#87CEEB">
+    <meta name="format-detection" content="telephone=no">
+    <title>لعبة كوبو</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="photos/Media.jpg">
+    <style>
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden; position: fixed;
+            top: 0; left: 0;
+            overscroll-behavior: none;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; }
+
+        #game-container {
+            width: 100vw; height: 100vh;
+            position: relative; overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        /* خلفيات الأولاد */
+        .bg-sky { background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 50%, #98FB98 100%); }
+        .bg-space { background: linear-gradient(180deg, #0c0c2c 0%, #1a1a4a 50%, #2d2d6d 100%); }
+        .bg-forest { background: linear-gradient(180deg, #228B22 0%, #90EE90 50%, #32CD32 100%); }
+        .bg-orange { background: linear-gradient(180deg, #F39C12 0%, #F8C471 50%, #FCF3CF 100%); }
+        .bg-blue { background: linear-gradient(180deg, #3498db 0%, #85C1E9 50%, #D6EAF8 100%); }
+        .bg-green { background: linear-gradient(180deg, #27ae60 0%, #82E0AA 50%, #D5F5E3 100%); }
+
+        /* خلفيات البنات */
+        .bg-pink { background: linear-gradient(180deg, #FF69B4 0%, #FFB6C1 50%, #FFC0CB 100%); }
+        .bg-purple { background: linear-gradient(180deg, #9B59B6 0%, #D7BDE2 50%, #FADBD8 100%); }
+        .bg-rose { background: linear-gradient(180deg, #E91E63 0%, #F48FB1 50%, #FCE4EC 100%); }
+        .bg-lavender { background: linear-gradient(180deg, #7C4DFF 0%, #B388FF 50%, #E8EAF6 100%); }
+        .bg-peach { background: linear-gradient(180deg, #FF8A65 0%, #FFCCBC 50%, #FFF3E0 100%); }
+        .bg-mint { background: linear-gradient(180deg, #26A69A 0%, #80CBC4 50%, #E0F2F1 100%); }
+
+        /* شاشة إدخال الاسم والجنس */
+        #name-screen {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(180deg, #FFE4E1 0%, #FFF0F5 50%, #E6E6FA 100%);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 1001;
+            padding: 20px;
+        }
+        #name-screen.hidden { display: none; }
+
+        .name-avatar {
+            width: 110px; height: 110px;
+            border-radius: 50%;
+            border: 5px solid #FFD700;
+            box-shadow: 0 0 25px rgba(255,215,0,0.7);
+            object-fit: cover;
+            margin-bottom: 8px;
+            animation: avatarBounce 2s ease-in-out infinite;
+        }
+        .kobo-intro {
+            font-size: 1rem; color: #9370DB;
+            margin-bottom: 12px;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .name-title {
+            font-size: 1.4rem; color: #FF69B4;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 12px;
+        }
+        #player-name-input {
+            width: 240px; padding: 10px 15px;
+            font-size: 1.1rem; text-align: center;
+            border: 3px solid #FF69B4;
+            border-radius: 18px;
+            outline: none;
+            margin-bottom: 12px;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        #player-name-input:focus {
+            border-color: #FFD700;
+            box-shadow: 0 0 12px rgba(255,215,0,0.5);
+        }
+
+        .gender-selection {
+            display: flex; gap: 20px;
+            margin-bottom: 15px;
+        }
+        .gender-btn {
+            width: 75px; height: 75px;
+            border-radius: 50%;
+            border: 4px solid #ddd;
+            background: white;
+            font-size: 2.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gender-btn.selected {
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.6);
+            transform: scale(1.15);
+        }
+        .gender-btn.boy { background: linear-gradient(145deg, #87CEEB, #4A90D9); }
+        .gender-btn.girl { background: linear-gradient(145deg, #FFB6C1, #FF69B4); }
+
+        .name-submit-btn {
+            padding: 12px 40px;
+            font-size: 1.2rem;
+            background: linear-gradient(145deg, #FF69B4, #FF1493);
+            color: white; border: none;
+            border-radius: 22px; cursor: pointer;
+            box-shadow: 0 5px 18px rgba(255,105,180,0.4);
+        }
+        .name-submit-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* شاشة البداية */
+        #start-screen {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none; flex-direction: column;
+            justify-content: flex-start; align-items: center;
+            z-index: 1000;
+            padding: 15px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        #start-screen.show { display: flex; }
+        #start-screen.boy-theme {
+            background: linear-gradient(180deg, #E3F2FD 0%, #BBDEFB 50%, #90CAF9 100%);
+        }
+        #start-screen.girl-theme {
+            background: linear-gradient(180deg, #FCE4EC 0%, #F8BBD9 50%, #F48FB1 100%);
+        }
+
+        .kobo-avatar {
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            border: 4px solid #FFD700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.7);
+            object-fit: cover;
+            margin-bottom: 5px;
+            animation: avatarBounce 2s ease-in-out infinite;
+        }
+        .welcome-title {
+            font-size: 1.3rem; color: #FF69B4;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 2px;
+        }
+        .welcome-subtitle {
+            font-size: 0.85rem; color: #9370DB;
+            margin-bottom: 10px;
+        }
+
+        .modes-container {
+            display: flex; flex-direction: column;
+            gap: 5px; max-width: 320px;
+            width: 100%;
+            padding-bottom: 15px;
+        }
+        .mode-btn {
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            border: none; border-radius: 14px;
+            cursor: pointer;
+            display: flex; align-items: center;
+            gap: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .mode-btn:active { transform: scale(0.96); }
+        .mode-desc { font-size: 0.65rem; opacity: 0.9; }
+        .mode-difficulty {
+            font-size: 0.55rem;
+            padding: 2px 6px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.3);
+            margin-right: auto;
+        }
+        .mode-icon { font-size: 1.4rem; }
+
+        /* ألوان الأزرار للأولاد */
+        .boy-theme .mode-balloons { background: linear-gradient(145deg, #2196F3, #1976D2); color: white; }
+        .boy-theme .mode-fruits { background: linear-gradient(145deg, #4CAF50, #388E3C); color: white; }
+        .boy-theme .mode-colors { background: linear-gradient(145deg, #FF9800, #F57C00); color: white; }
+        .boy-theme .mode-target { background: linear-gradient(145deg, #F44336, #D32F2F); color: white; }
+        .boy-theme .mode-numbers { background: linear-gradient(145deg, #673AB7, #512DA8); color: white; }
+        .boy-theme .mode-memory { background: linear-gradient(145deg, #009688, #00796B); color: white; }
+
+        /* ألوان الأزرار للبنات */
+        .girl-theme .mode-balloons { background: linear-gradient(145deg, #E91E63, #C2185B); color: white; }
+        .girl-theme .mode-fruits { background: linear-gradient(145deg, #9C27B0, #7B1FA2); color: white; }
+        .girl-theme .mode-colors { background: linear-gradient(145deg, #FF4081, #F50057); color: white; }
+        .girl-theme .mode-target { background: linear-gradient(145deg, #EC407A, #D81B60); color: white; }
+        .girl-theme .mode-numbers { background: linear-gradient(145deg, #AB47BC, #8E24AA); color: white; }
+        .girl-theme .mode-memory { background: linear-gradient(145deg, #7C4DFF, #651FFF); color: white; }
+
+        /* واجهة اللعبة */
+        #game-hud {
+            position: absolute; top: 8px; right: 8px; left: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100;
+        }
+        .hud-box {
+            background: rgba(255,255,255,0.95);
+            padding: 6px 12px; border-radius: 15px;
+            font-size: 0.9rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+        #sound-toggle, #back-btn {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.95);
+            border: none; font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+        .hud-left {
+            display: flex; gap: 6px;
+        }
+
+        /* شريط التقدم */
+        #progress-bar {
+            position: absolute; bottom: 10px;
+            left: 10px; right: 10px;
+            height: 14px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 7px; overflow: hidden;
+            z-index: 100;
+        }
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            border-radius: 7px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        #progress-text {
+            position: absolute; width: 100%;
+            text-align: center; line-height: 14px;
+            font-size: 0.7rem; color: #333; font-weight: bold;
+        }
+
+        /* معلومات المستوى */
+        #level-info {
+            position: absolute;
+            top: 52px; left: 50%; transform: translateX(-50%);
+            padding: 5px 15px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            z-index: 100;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            white-space: nowrap;
+        }
+
+        /* تعليمات */
+        #mode-instruction {
+            position: absolute;
+            bottom: 35px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white; padding: 6px 15px;
+            border-radius: 15px; font-size: 0.8rem;
+            z-index: 100; white-space: nowrap;
+        }
+
+        /* العناصر */
+        .game-item {
+            position: absolute; cursor: pointer;
+            pointer-events: auto;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* صورة كوبو */
+        .kobo-photo {
+            position: absolute;
+            border-radius: 50%;
+            border: 4px solid #FFD700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.7);
+            object-fit: cover;
+            z-index: 500;
+            animation: photoAppear 0.4s ease-out;
+        }
+
+        /* شاشة المكافأة */
+        #reward-screen {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.88);
+            display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        #reward-screen.show { display: flex; }
+
+        .reward-photo {
+            width: 160px; height: 160px;
+            border-radius: 16px;
+            border: 6px solid #FFD700;
+            box-shadow: 0 0 40px rgba(255,215,0,0.8);
+            object-fit: cover;
+            margin-bottom: 15px;
+            animation: rewardAppear 0.6s ease-out;
+        }
+        .reward-text {
+            font-size: 1.6rem; color: #FFD700;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        .reward-level {
+            font-size: 1rem; color: white;
+            margin-bottom: 5px;
+        }
+        .reward-stats {
+            font-size: 0.85rem; color: #aaa;
+            margin-bottom: 15px;
+        }
+        .continue-btn {
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            background: linear-gradient(145deg, #FFD700, #FFA500);
+            color: #333; border: none;
+            border-radius: 18px; cursor: pointer;
+        }
+        .continue-btn:active { transform: scale(0.95); }
+
+        /* التأثيرات */
+        .confetti-piece { position: absolute; pointer-events: none; z-index: 400; }
+        .star-effect {
+            position: absolute; pointer-events: none;
+            z-index: 450; font-size: 20px;
+            animation: starPop 0.5s ease-out forwards;
+        }
+        .cheer-message {
+            position: absolute; left: 50%; top: 20%;
+            transform: translateX(-50%);
+            font-size: 1.6rem; color: #FFD700;
+            text-shadow: 3px 3px 8px rgba(0,0,0,0.5);
+            z-index: 600; pointer-events: none;
+            animation: cheerPop 1.2s ease-out forwards;
+            white-space: nowrap;
+        }
+
+        .golden { filter: drop-shadow(0 0 10px gold); }
+
+        /* هدف اللون */
+        #color-target {
+            position: absolute;
+            top: 52px; left: 50%; transform: translateX(-50%);
+            padding: 8px 18px;
+            border-radius: 15px;
+            font-size: 1rem; font-weight: bold;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        /* سلة الفواكه */
+        #fruit-basket {
+            position: absolute;
+            bottom: 35px; left: 50%; transform: translateX(-50%);
+            font-size: 3rem;
+            z-index: 50;
+        }
+
+        /* الهدف لوضع صيد الأهداف */
+        .target-item {
+            position: absolute;
+            cursor: pointer;
+            z-index: 200;
+            animation: targetPulse 0.5s ease-in-out infinite alternate;
+        }
+
+        /* أرقام لوضع الأرقام */
+        .number-item {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 200;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        /* بطاقات الذاكرة */
+        .memory-card {
+            position: absolute;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 200;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .memory-card.hidden-card {
+            background: linear-gradient(145deg, #9b59b6, #8e44ad);
+        }
+        .memory-card.revealed {
+            background: white;
+        }
+
+        /* عداد الوقت */
+        #timer-display {
+            position: absolute;
+            top: 52px; left: 50%; transform: translateX(-50%);
+            padding: 6px 16px;
+            border-radius: 12px;
+            font-size: 1rem; font-weight: bold;
+            z-index: 100;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* الرقم المطلوب */
+        #number-target {
+            position: absolute;
+            top: 52px; left: 50%; transform: translateX(-50%);
+            padding: 8px 20px;
+            border-radius: 15px;
+            font-size: 1rem; font-weight: bold;
+            z-index: 100;
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        @keyframes avatarBounce {
+            0%, 100% { transform: scale(1) rotate(-3deg); }
+            50% { transform: scale(1.05) rotate(3deg); }
+        }
+        @keyframes photoAppear {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        @keyframes rewardAppear {
+            0% { transform: scale(0.3); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes starPop {
+            0% { transform: scale(0); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        @keyframes cheerPop {
+            0% { transform: translateX(-50%) scale(0.3); opacity: 0; }
+            15% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+            85% { transform: translateX(-50%) scale(1); opacity: 1; }
+            100% { transform: translateX(-50%) translateY(-25px); opacity: 0; }
+        }
+        @keyframes targetPulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.08); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+
+        /* تحسينات للموبايل */
+        @media (max-height: 600px) {
+            .name-avatar { width: 80px; height: 80px; }
+            .kobo-avatar { width: 70px; height: 70px; }
+            .mode-btn { padding: 8px 12px; }
+            .reward-photo { width: 120px; height: 120px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container" class="bg-sky">
+        <!-- شاشة إدخال الاسم والجنس -->
+        <div id="name-screen">
+            <img src="photos/Media.jpg" alt="كوبو" class="name-avatar">
+            <p class="kobo-intro">أهلاً! أنا كوبو 👋<br>يلا نلعب سوا!</p>
+            <h1 class="name-title">اسمك إيه؟</h1>
+            <input type="text" id="player-name-input" placeholder="اكتب اسمك هنا..." maxlength="12">
+
+            <p style="color:#9370DB; margin-bottom:6px; font-size:0.9rem;">أنت ولد ولا بنت؟</p>
+            <div class="gender-selection">
+                <button class="gender-btn boy" data-gender="boy">👦</button>
+                <button class="gender-btn girl" data-gender="girl">👧</button>
+            </div>
+
+            <button class="name-submit-btn" id="name-submit-btn">يلا نلعب! 🎮</button>
+        </div>
+
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="boy-theme">
+            <img src="photos/Media.jpg" alt="كوبو" class="kobo-avatar">
+            <h1 class="welcome-title" id="welcome-title">أهلاً!</h1>
+            <p class="welcome-subtitle">اختار اللعبة اللي تحبها</p>
+
+            <div class="modes-container">
+                <button class="mode-btn mode-balloons" data-mode="balloons">
+                    <span class="mode-icon">🎈</span>
+                    <div><strong>فرقع البالونات</strong><div class="mode-desc">اضغط البالونات الطايرة!</div></div>
+                    <span class="mode-difficulty">سهل</span>
+                </button>
+                <button class="mode-btn mode-fruits" data-mode="fruits">
+                    <span class="mode-icon">🍎</span>
+                    <div><strong>سلة الفواكه</strong><div class="mode-desc">حرك السلة والتقط الفواكه</div></div>
+                    <span class="mode-difficulty">سهل</span>
+                </button>
+                <button class="mode-btn mode-colors" data-mode="colors">
+                    <span class="mode-icon">🎨</span>
+                    <div><strong>تطابق الألوان</strong><div class="mode-desc">اضغط اللون الصح!</div></div>
+                    <span class="mode-difficulty">متوسط</span>
+                </button>
+                <button class="mode-btn mode-target" data-mode="target">
+                    <span class="mode-icon">🎯</span>
+                    <div><strong>صيد الأهداف</strong><div class="mode-desc">اضغط الهدف بسرعة!</div></div>
+                    <span class="mode-difficulty">متوسط</span>
+                </button>
+                <button class="mode-btn mode-numbers" data-mode="numbers">
+                    <span class="mode-icon">🔢</span>
+                    <div><strong>الأرقام بالترتيب</strong><div class="mode-desc">اضغط الأرقام بالترتيب</div></div>
+                    <span class="mode-difficulty">صعب</span>
+                </button>
+                <button class="mode-btn mode-memory" data-mode="memory">
+                    <span class="mode-icon">🧩</span>
+                    <div><strong>لعبة الذاكرة</strong><div class="mode-desc">تذكر مكان الشكل!</div></div>
+                    <span class="mode-difficulty">صعب</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- واجهة اللعبة -->
+        <div id="game-hud" style="display:none;">
+            <div class="hud-left">
+                <button id="back-btn">🏠</button>
+                <button id="sound-toggle">🔊</button>
+            </div>
+            <div class="hud-box">🏆 <span id="level">1</span></div>
+            <div class="hud-box">⭐ <span id="score">0</span></div>
+        </div>
+
+        <!-- معلومات المستوى -->
+        <div id="level-info" style="display:none;"></div>
+
+        <!-- شريط التقدم -->
+        <div id="progress-bar" style="display:none;">
+            <div id="progress-fill"></div>
+            <div id="progress-text">0 / 10</div>
+        </div>
+
+        <!-- تعليمات -->
+        <div id="mode-instruction" style="display:none;"></div>
+
+        <!-- هدف اللون -->
+        <div id="color-target" style="display:none;"></div>
+
+        <!-- عداد الوقت -->
+        <div id="timer-display" style="display:none;"></div>
+
+        <!-- هدف الأرقام -->
+        <div id="number-target" style="display:none;"></div>
+
+        <!-- سلة الفواكه -->
+        <div id="fruit-basket" style="display:none;">🧺</div>
+
+        <!-- شاشة المكافأة -->
+        <div id="reward-screen">
+            <img src="" alt="كوبو" class="reward-photo" id="reward-photo">
+            <div class="reward-text" id="reward-text">شاطر!</div>
+            <div class="reward-level" id="reward-level">المستوى 2</div>
+            <div class="reward-stats" id="reward-stats"></div>
+            <button class="continue-btn" id="continue-btn">يلا نكمل! 🎉</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== صور كوبو =====
+        const koboPhotos = [
+            'photos/Media.jpg', 'photos/Media (1).jpg', 'photos/Media (2).jpg',
+            'photos/Media (3).jpg', 'photos/Media (4).jpg', 'photos/Media (5).jpg',
+            'photos/Media (6).jpg', 'photos/Media (7).jpg', 'photos/Media (8).jpg',
+            'photos/Media (9).jpg', 'photos/Media (10).jpg', 'photos/Media (11).jpg',
+            'photos/Media (12).jpg', 'photos/Media (13).jpg', 'photos/Media (14).jpg'
+        ];
+
+        // ===== بيانات اللاعب =====
+        let playerName = 'بطل';
+        let playerGender = 'boy';
+
+        // ===== الخلفيات حسب الجنس =====
+        const boyBackgrounds = ['bg-sky', 'bg-blue', 'bg-green', 'bg-orange', 'bg-forest'];
+        const girlBackgrounds = ['bg-pink', 'bg-purple', 'bg-rose', 'bg-lavender', 'bg-peach', 'bg-mint'];
+
+        function getRandomBackground() {
+            const bgs = playerGender === 'girl' ? girlBackgrounds : boyBackgrounds;
+            return bgs[Math.floor(Math.random() * bgs.length)];
+        }
+
+        // ===== رسائل التشجيع حسب الجنس =====
+        function getCheers() {
+            if (playerGender === 'girl') {
+                return [
+                    `شاطرة يا ${playerName}! ⭐`,
+                    `برافو يا ${playerName}! 🌟`,
+                    `يا بطلة يا ${playerName}! 💪`,
+                    `ممتازة يا ${playerName}! 🎀`,
+                    `أحسنتِ يا ${playerName}! 💖`,
+                    `${playerName} ذكية! 🧠`,
+                    `قوية يا ${playerName}! 💜`,
+                    `رائعة يا ${playerName}! 🌸`,
+                    `${playerName} نجمة! ✨`,
+                    `يلا يا ${playerName}! 🦋`,
+                    `كمان يا ${playerName}! 💕`,
+                    `حلوة يا ${playerName}! 🌺`
+                ];
+            }
+            return [
+                `شاطر يا ${playerName}! ⭐`,
+                `برافو يا ${playerName}! 🌟`,
+                `يا بطل يا ${playerName}! 💪`,
+                `ممتاز يا ${playerName}! 🏆`,
+                `أحسنت يا ${playerName}! 👏`,
+                `${playerName} ذكي! 🧠`,
+                `قوي يا ${playerName}! 🔥`,
+                `رائع يا ${playerName}! ⚡`,
+                `${playerName} نجم! ✨`,
+                `يلا يا ${playerName}! 🚀`,
+                `كمان يا ${playerName}! 💯`,
+                `حلو يا ${playerName}! 👍`
+            ];
+        }
+
+        function getRewardMessages() {
+            if (playerGender === 'girl') {
+                return [
+                    `شاطرة يا ${playerName}! 🌟`,
+                    `برافو يا بطلة! 🏆`,
+                    `${playerName} نجمة! ⭐`,
+                    `أحسنتِ يا ${playerName}! 🎉`,
+                    `ممتازة يا ${playerName}! 💪`,
+                    `${playerName} ذكية جداً! 🧠`
+                ];
+            }
+            return [
+                `شاطر يا ${playerName}! 🌟`,
+                `برافو يا بطل! 🏆`,
+                `${playerName} نجم! ⭐`,
+                `أحسنت يا ${playerName}! 🎉`,
+                `ممتاز يا ${playerName}! 💪`,
+                `${playerName} ذكي جداً! 🧠`
+            ];
+        }
+
+        // ===== ألوان اللعبة =====
+        const gameColors = [
+            {name: 'أحمر', color: '#FF4757', emoji: '🔴'},
+            {name: 'أزرق', color: '#3498db', emoji: '🔵'},
+            {name: 'أخضر', color: '#2ecc71', emoji: '🟢'},
+            {name: 'أصفر', color: '#f1c40f', emoji: '🟡'}
+        ];
+
+        const fruits = ['🍎', '🍊', '🍋', '🍇', '🍓', '🍑', '🍌', '🥝', '🍐', '🍒'];
+        const memoryShapes = ['⭐', '❤️', '🌙', '🔶', '💎', '🌸', '🎀', '🦋', '🌈', '🎁', '🌻', '🍀'];
+
+        // ===== العناصر =====
+        const container = document.getElementById('game-container');
+        const nameScreen = document.getElementById('name-screen');
+        const playerNameInput = document.getElementById('player-name-input');
+        const nameSubmitBtn = document.getElementById('name-submit-btn');
+        const genderBtns = document.querySelectorAll('.gender-btn');
+        const startScreen = document.getElementById('start-screen');
+        const welcomeTitle = document.getElementById('welcome-title');
+        const gameHud = document.getElementById('game-hud');
+        const levelInfo = document.getElementById('level-info');
+        const progressBar = document.getElementById('progress-bar');
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+        const modeInstruction = document.getElementById('mode-instruction');
+        const colorTarget = document.getElementById('color-target');
+        const timerDisplay = document.getElementById('timer-display');
+        const numberTarget = document.getElementById('number-target');
+        const fruitBasket = document.getElementById('fruit-basket');
+        const rewardScreen = document.getElementById('reward-screen');
+        const rewardPhoto = document.getElementById('reward-photo');
+        const rewardTextEl = document.getElementById('reward-text');
+        const rewardLevelEl = document.getElementById('reward-level');
+        const rewardStats = document.getElementById('reward-stats');
+        const continueBtn = document.getElementById('continue-btn');
+        const scoreEl = document.getElementById('score');
+        const levelEl = document.getElementById('level');
+        const soundBtn = document.getElementById('sound-toggle');
+        const backBtn = document.getElementById('back-btn');
+
+        let currentMode = null;
+        let score = 0;
+        let level = 1;
+        let levelProgress = 0;
+        let targetPerLevel = 8;
+        let gameRunning = false;
+        let soundOn = true;
+        let audioCtx = null;
+        let photoIndex = 0;
+        let spawnTimer = null;
+        let cheerCounter = 0;
+
+        // للألوان
+        let currentTargetColor = null;
+        let colorBallsOnScreen = [];
+
+        // للفواكه
+        let basketX = window.innerWidth / 2;
+
+        // للأهداف
+        let targetTimer = null;
+
+        // للأرقام
+        let currentNumber = 1;
+        let maxNumber = 5;
+        let numberElements = [];
+
+        // للذاكرة
+        let memoryTarget = null;
+        let memoryCards = [];
+        let memoryRevealed = false;
+        let cardCount = 3;
+
+        // ===== حساب الصعوبة حسب المستوى =====
+        function getDifficultySettings() {
+            return {
+                // البالونات: سرعة أكبر
+                balloonSpeed: 1.2 + level * 0.15,
+                balloonSpawnRate: Math.max(400, 1000 - level * 80),
+
+                // الفواكه: سرعة أكبر
+                fruitSpeed: 2.0 + level * 0.2,
+                fruitSpawnRate: Math.max(450, 1100 - level * 90),
+
+                // الألوان: سرعة أكبر
+                colorSpeed: 1.2 + level * 0.12,
+                colorSpawnRate: Math.max(500, 1000 - level * 70),
+
+                // الأهداف: وقت أقل + حجم أصغر
+                targetTime: Math.max(600, 2200 - level * 200),
+                targetSize: Math.max(45, 75 - level * 4),
+
+                // الأرقام: عدد أكبر
+                numbersCount: Math.min(9, 4 + level),
+                numberSize: Math.max(45, 60 - level * 2),
+
+                // الذاكرة: بطاقات أكثر + وقت عرض أقل
+                memoryCards: Math.min(8, 2 + level),
+                memoryShowTime: Math.max(800, 2500 - level * 250),
+                cardSize: Math.max(55, 70 - level * 2)
+            };
+        }
+
+        function updateLevelInfo() {
+            const diff = getDifficultySettings();
+            let info = '';
+
+            if (currentMode === 'numbers') {
+                info = `الأرقام: 1 - ${diff.numbersCount}`;
+            } else if (currentMode === 'memory') {
+                info = `${diff.memoryCards} بطاقات`;
+            } else if (currentMode === 'target') {
+                info = `الوقت: ${(diff.targetTime / 1000).toFixed(1)} ثانية`;
+            }
+
+            if (info) {
+                levelInfo.textContent = info;
+                levelInfo.style.display = 'block';
+            } else {
+                levelInfo.style.display = 'none';
+            }
+        }
+
+        // ===== اختيار الجنس =====
+        genderBtns.forEach(btn => {
+            function selectGender() {
+                genderBtns.forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                playerGender = btn.dataset.gender;
+            }
+            btn.addEventListener('click', selectGender);
+            btn.addEventListener('touchstart', e => { e.preventDefault(); selectGender(); }, {passive: false});
+        });
+
+        // ===== إدخال الاسم =====
+        function submitName() {
+            const name = playerNameInput.value.trim();
+            if (name.length > 0) {
+                playerName = name;
+            } else {
+                playerName = playerGender === 'girl' ? 'بطلة' : 'بطل';
+            }
+            nameScreen.classList.add('hidden');
+
+            // تطبيق الثيم حسب الجنس
+            startScreen.classList.remove('boy-theme', 'girl-theme');
+            startScreen.classList.add(playerGender === 'girl' ? 'girl-theme' : 'boy-theme');
+
+            welcomeTitle.textContent = `أهلاً يا ${playerName}! 👋`;
+            startScreen.classList.add('show');
+        }
+
+        nameSubmitBtn.addEventListener('click', submitName);
+        nameSubmitBtn.addEventListener('touchstart', e => { e.preventDefault(); submitName(); }, {passive: false});
+        playerNameInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') submitName();
+        });
+
+        // ===== منع السلوكيات =====
+        document.addEventListener('dblclick', e => e.preventDefault());
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
+        // ===== الصوت =====
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(freq, duration = 0.1) {
+            if (!soundOn || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(Math.max(freq/2, 20), audioCtx.currentTime + duration);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        function playSuccess() {
+            if (!soundOn || !audioCtx) return;
+            [523, 659, 784, 1047].forEach((f, i) => {
+                setTimeout(() => playSound(f, 0.1), i * 60);
+            });
+        }
+
+        function playWrong() {
+            if (!soundOn || !audioCtx) return;
+            playSound(200, 0.2);
+        }
+
+        function playLevelUp() {
+            if (!soundOn || !audioCtx) return;
+            [523, 659, 784, 1047, 1319].forEach((f, i) => {
+                setTimeout(() => playSound(f, 0.15), i * 80);
+            });
+        }
+
+        function clearItems() {
+            document.querySelectorAll('.game-item, .target-item, .number-item, .memory-card, .kobo-photo').forEach(el => el.remove());
+            colorBallsOnScreen = [];
+            numberElements = [];
+            memoryCards = [];
+        }
+
+        // ===== التأثيرات =====
+        function createConfetti(x, y) {
+            const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#FF69B4', '#95E1D3'];
+            for (let i = 0; i < 10; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = x + 'px';
+                piece.style.top = y + 'px';
+                piece.style.width = (3 + Math.random() * 4) + 'px';
+                piece.style.height = (3 + Math.random() * 4) + 'px';
+                piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 2 + Math.random() * 3;
+                let vx = Math.cos(angle) * speed;
+                let vy = Math.sin(angle) * speed - 2;
+                let posX = 0, posY = 0, opacity = 1;
+
+                container.appendChild(piece);
+
+                function anim() {
+                    posX += vx; posY += vy; vy += 0.2; opacity -= 0.035;
+                    piece.style.transform = `translate(${posX}px, ${posY}px)`;
+                    piece.style.opacity = opacity;
+                    if (opacity > 0) requestAnimationFrame(anim);
+                    else piece.remove();
+                }
+                requestAnimationFrame(anim);
+            }
+        }
+
+        function createStars(x, y) {
+            for (let i = 0; i < 3; i++) {
+                const star = document.createElement('div');
+                star.className = 'star-effect';
+                star.textContent = ['⭐', '✨', '🌟'][i];
+                star.style.left = (x - 8 + (Math.random()-0.5) * 40) + 'px';
+                star.style.top = (y - 8 + (Math.random()-0.5) * 40) + 'px';
+                container.appendChild(star);
+                setTimeout(() => star.remove(), 500);
+            }
+        }
+
+        function showKoboPhoto(x, y) {
+            const img = document.createElement('img');
+            img.className = 'kobo-photo';
+            img.src = koboPhotos[photoIndex];
+            photoIndex = (photoIndex + 1) % koboPhotos.length;
+            img.onerror = () => img.remove();
+
+            const size = 60;
+            img.style.width = size + 'px';
+            img.style.height = size + 'px';
+            img.style.left = Math.max(5, Math.min(window.innerWidth - size - 5, x - size/2)) + 'px';
+            img.style.top = Math.max(50, Math.min(window.innerHeight - size - 35, y - size/2)) + 'px';
+
+            container.appendChild(img);
+            setTimeout(() => {
+                img.style.transition = 'all 0.25s';
+                img.style.opacity = '0';
+                img.style.transform = 'scale(0.5)';
+                setTimeout(() => img.remove(), 250);
+            }, 1000);
+        }
+
+        function showCheer() {
+            const cheers = getCheers();
+            const msg = document.createElement('div');
+            msg.className = 'cheer-message';
+            msg.textContent = cheers[Math.floor(Math.random() * cheers.length)];
+            container.appendChild(msg);
+            playSuccess();
+            setTimeout(() => msg.remove(), 1200);
+        }
+
+        // ===== تحديث التقدم =====
+        function updateProgress() {
+            const pct = Math.min(100, (levelProgress / targetPerLevel) * 100);
+            progressFill.style.width = pct + '%';
+            progressText.textContent = `${Math.min(levelProgress, targetPerLevel)} / ${targetPerLevel}`;
+        }
+
+        function addScore(points, x, y) {
+            score += points;
+            levelProgress += points;
+            cheerCounter++;
+            scoreEl.textContent = score;
+            updateProgress();
+
+            createConfetti(x, y);
+            createStars(x, y);
+            showKoboPhoto(x, y);
+            playSound(600, 0.06);
+
+            // تشجيع كل 2-3 نقاط
+            if (cheerCounter >= 2 + Math.floor(Math.random() * 2)) {
+                showCheer();
+                cheerCounter = 0;
+            }
+
+            if (levelProgress >= targetPerLevel) levelUp();
+        }
+
+        function levelUp() {
+            gameRunning = false;
+            clearTimeout(spawnTimer);
+            clearTimeout(targetTimer);
+            playLevelUp();
+
+            rewardPhoto.src = koboPhotos[photoIndex];
+            photoIndex = (photoIndex + 1) % koboPhotos.length;
+
+            const rewards = getRewardMessages();
+            rewardTextEl.textContent = rewards[Math.floor(Math.random() * rewards.length)];
+            rewardLevelEl.textContent = `وصلت للمستوى ${level + 1}! 🎉`;
+
+            // إحصائيات المستوى الجاي
+            const nextDiff = getDifficultySettings();
+            let statsText = '';
+            if (currentMode === 'numbers') {
+                statsText = `المستوى الجاي: ${Math.min(9, 4 + level + 1)} أرقام`;
+            } else if (currentMode === 'memory') {
+                statsText = `المستوى الجاي: ${Math.min(8, 2 + level + 1)} بطاقات`;
+            } else {
+                statsText = `المستوى الجاي أصعب! 💪`;
+            }
+            rewardStats.textContent = statsText;
+
+            rewardScreen.classList.add('show');
+
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => createConfetti(Math.random() * window.innerWidth, Math.random() * 200), i * 100);
+            }
+        }
+
+        function continueGame() {
+            rewardScreen.classList.remove('show');
+            level++;
+            levelProgress = 0;
+            cheerCounter = 0;
+            levelEl.textContent = level;
+            targetPerLevel = 8 + level;
+            updateProgress();
+            updateLevelInfo();
+
+            // تنظيف العناصر القديمة
+            clearItems();
+
+            // تغيير الخلفية
+            container.className = getRandomBackground();
+
+            gameRunning = true;
+
+            // بدء الوضع المناسب (مهم للأوضاع الخاصة)
+            if (currentMode === 'numbers') {
+                setupNumbersMode();
+            } else if (currentMode === 'memory') {
+                setupMemoryMode();
+            } else if (currentMode === 'target') {
+                spawnTarget();
+            } else {
+                startModeLoop();
+            }
+        }
+
+        function goHome() {
+            gameRunning = false;
+            clearTimeout(spawnTimer);
+            clearTimeout(targetTimer);
+            clearItems();
+
+            gameHud.style.display = 'none';
+            progressBar.style.display = 'none';
+            modeInstruction.style.display = 'none';
+            colorTarget.style.display = 'none';
+            timerDisplay.style.display = 'none';
+            numberTarget.style.display = 'none';
+            levelInfo.style.display = 'none';
+            fruitBasket.style.display = 'none';
+            rewardScreen.classList.remove('show');
+
+            startScreen.classList.add('show');
+        }
+
+        // =========================================================
+        // =================== وضع البالونات =======================
+        // =========================================================
+        function spawnBalloon() {
+            if (!gameRunning) return;
+
+            const diff = getDifficultySettings();
+            const item = document.createElement('div');
+            item.className = 'game-item';
+
+            const size = 55 + Math.random() * 25;
+            const colors = playerGender === 'girl'
+                ? ['#FF69B4', '#FF1493', '#DA70D6', '#BA55D3', '#9370DB', '#FFB6C1']
+                : ['#4A90D9', '#3498db', '#2ecc71', '#FF6B6B', '#FFE66D', '#87CEEB'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const isGolden = Math.random() < 0.08;
+
+            item.style.width = size + 'px';
+            item.style.height = size * 1.2 + 'px';
+            item.style.left = (8 + Math.random() * (window.innerWidth - size - 16)) + 'px';
+            item.style.top = (window.innerHeight + 10) + 'px';
+
+            if (isGolden) item.classList.add('golden');
+
+            const face = Math.random() > 0.6 ? `
+                <circle cx="40" cy="38" r="3" fill="#333"/>
+                <circle cx="60" cy="38" r="3" fill="#333"/>
+                <path d="M38,52 Q50,62 62,52" stroke="#333" stroke-width="2" fill="none"/>
+            ` : '';
+
+            item.innerHTML = `
+                <svg viewBox="0 0 100 120" style="width:100%;height:100%">
+                    <ellipse cx="50" cy="45" rx="42" ry="44" fill="${isGolden ? '#FFD700' : color}"/>
+                    <ellipse cx="32" cy="28" rx="10" ry="15" fill="rgba(255,255,255,0.4)"/>
+                    ${face}
+                    <polygon points="44,88 56,88 50,98" fill="${isGolden ? '#FFD700' : color}"/>
+                    <path d="M50,98 Q44,106 50,112" stroke="${isGolden ? '#FFD700' : color}" stroke-width="2" fill="none"/>
+                </svg>
+            `;
+
+            const speed = diff.balloonSpeed + Math.random() * 0.8;
+            let y = window.innerHeight + 10;
+            let wobble = Math.random() * Math.PI * 2;
+            let animId;
+
+            function animate() {
+                if (!item.parentNode) return;
+                y -= speed;
+                wobble += 0.025;
+                const wx = Math.sin(wobble) * 10;
+                item.style.top = y + 'px';
+                item.style.transform = `translateX(${wx}px)`;
+                if (y < -90) item.remove();
+                else animId = requestAnimationFrame(animate);
+            }
+
+            function pop(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!item.parentNode) return;
+                cancelAnimationFrame(animId);
+                const r = item.getBoundingClientRect();
+                addScore(isGolden ? 3 : 1, r.left + r.width/2, r.top + r.height/2);
+                item.remove();
+            }
+
+            item.addEventListener('touchstart', pop, {passive: false});
+            item.addEventListener('mousedown', pop);
+
+            container.appendChild(item);
+            animId = requestAnimationFrame(animate);
+        }
+
+        // =========================================================
+        // =================== وضع الفواكه =========================
+        // =========================================================
+        function setupFruitBasket() {
+            fruitBasket.style.display = 'block';
+            basketX = window.innerWidth / 2;
+            fruitBasket.style.left = basketX + 'px';
+
+            function moveBasket(clientX) {
+                basketX = Math.max(30, Math.min(window.innerWidth - 30, clientX));
+                fruitBasket.style.left = basketX + 'px';
+                fruitBasket.style.transform = 'translateX(-50%)';
+            }
+
+            container.ontouchmove = e => {
+                if (currentMode === 'fruits' && gameRunning) {
+                    moveBasket(e.touches[0].clientX);
+                }
+            };
+            container.onmousemove = e => {
+                if (currentMode === 'fruits' && gameRunning) {
+                    moveBasket(e.clientX);
+                }
+            };
+        }
+
+        function spawnFallingFruit() {
+            if (!gameRunning) return;
+
+            const diff = getDifficultySettings();
+            const item = document.createElement('div');
+            item.className = 'game-item';
+
+            const size = 35 + Math.random() * 15;
+            const fruit = fruits[Math.floor(Math.random() * fruits.length)];
+
+            item.style.width = size + 'px';
+            item.style.height = size + 'px';
+            item.style.left = (15 + Math.random() * (window.innerWidth - size - 30)) + 'px';
+            item.style.top = '-40px';
+            item.style.fontSize = (size * 0.8) + 'px';
+            item.textContent = fruit;
+            item.style.pointerEvents = 'none';
+
+            const speed = diff.fruitSpeed + Math.random() * 1.5;
+            let y = -40;
+            let animId;
+
+            function animate() {
+                if (!item.parentNode) return;
+                y += speed;
+                item.style.top = y + 'px';
+
+                const itemX = parseFloat(item.style.left) + size/2;
+                const basketY = window.innerHeight - 60;
+
+                if (y > basketY - 25 && y < basketY + 25) {
+                    if (Math.abs(itemX - basketX) < 42) {
+                        addScore(1, itemX, basketY - 40);
+                        item.remove();
+                        return;
+                    }
+                }
+
+                if (y > window.innerHeight + 30) {
+                    item.remove();
+                    playWrong();
+                } else {
+                    animId = requestAnimationFrame(animate);
+                }
+            }
+
+            container.appendChild(item);
+            animId = requestAnimationFrame(animate);
+        }
+
+        // =========================================================
+        // =================== وضع الألوان =========================
+        // =========================================================
+        function setupColorMode() {
+            colorTarget.style.display = 'block';
+            pickNewTargetColor();
+        }
+
+        function pickNewTargetColor() {
+            currentTargetColor = gameColors[Math.floor(Math.random() * gameColors.length)];
+            colorTarget.textContent = `اضغط: ${currentTargetColor.emoji} ${currentTargetColor.name}`;
+            colorTarget.style.backgroundColor = currentTargetColor.color;
+            colorTarget.style.color = 'white';
+        }
+
+        function spawnColorBall() {
+            if (!gameRunning) return;
+
+            const diff = getDifficultySettings();
+            const shouldBeCorrect = Math.random() < 0.35 || colorBallsOnScreen.filter(c => c === currentTargetColor.color).length === 0;
+            const colorObj = shouldBeCorrect ? currentTargetColor : gameColors[Math.floor(Math.random() * gameColors.length)];
+            const isCorrect = colorObj.color === currentTargetColor.color;
+
+            const item = document.createElement('div');
+            item.className = 'game-item';
+
+            const size = 50 + Math.random() * 20;
+
+            item.style.width = size + 'px';
+            item.style.height = size + 'px';
+            item.style.borderRadius = '50%';
+            item.style.backgroundColor = colorObj.color;
+            item.style.boxShadow = `0 4px 10px ${colorObj.color}80`;
+            item.style.left = (10 + Math.random() * (window.innerWidth - size - 20)) + 'px';
+            item.style.top = (window.innerHeight + 10) + 'px';
+
+            colorBallsOnScreen.push(colorObj.color);
+
+            const speed = diff.colorSpeed + Math.random() * 0.8;
+            let y = window.innerHeight + 10;
+            let animId;
+
+            function animate() {
+                if (!item.parentNode) return;
+                y -= speed;
+                item.style.top = y + 'px';
+                if (y < -60) {
+                    const idx = colorBallsOnScreen.indexOf(colorObj.color);
+                    if (idx > -1) colorBallsOnScreen.splice(idx, 1);
+                    item.remove();
+                }
+                else animId = requestAnimationFrame(animate);
+            }
+
+            function tapColor(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!item.parentNode) return;
+                cancelAnimationFrame(animId);
+                const r = item.getBoundingClientRect();
+
+                const idx = colorBallsOnScreen.indexOf(colorObj.color);
+                if (idx > -1) colorBallsOnScreen.splice(idx, 1);
+
+                if (isCorrect) {
+                    addScore(1, r.left + r.width/2, r.top + r.height/2);
+                    pickNewTargetColor();
+                    item.remove();
+                } else {
+                    playWrong();
+                    // اللون الغلط يختفي فوراً
+                    item.style.transition = 'all 0.15s';
+                    item.style.transform = 'scale(0)';
+                    item.style.opacity = '0';
+                    setTimeout(() => {
+                        if (item.parentNode) item.remove();
+                    }, 150);
+                }
+            }
+
+            item.addEventListener('touchstart', tapColor, {passive: false});
+            item.addEventListener('mousedown', tapColor);
+
+            container.appendChild(item);
+            animId = requestAnimationFrame(animate);
+        }
+
+        // =========================================================
+        // =================== وضع صيد الأهداف =====================
+        // =========================================================
+        function spawnTarget() {
+            if (!gameRunning) return;
+
+            document.querySelectorAll('.target-item').forEach(t => t.remove());
+
+            const diff = getDifficultySettings();
+            const item = document.createElement('div');
+            item.className = 'target-item';
+
+            const size = diff.targetSize;
+            item.style.width = size + 'px';
+            item.style.height = size + 'px';
+
+            const maxX = window.innerWidth - size - 15;
+            const maxY = window.innerHeight - size - 60;
+            item.style.left = (15 + Math.random() * maxX) + 'px';
+            item.style.top = (70 + Math.random() * maxY) + 'px';
+
+            item.innerHTML = `
+                <svg viewBox="0 0 100 100" style="width:100%;height:100%">
+                    <circle cx="50" cy="50" r="48" fill="${playerGender === 'girl' ? '#E91E63' : '#e74c3c'}"/>
+                    <circle cx="50" cy="50" r="35" fill="white"/>
+                    <circle cx="50" cy="50" r="22" fill="${playerGender === 'girl' ? '#E91E63' : '#e74c3c'}"/>
+                    <circle cx="50" cy="50" r="10" fill="white"/>
+                </svg>
+            `;
+
+            function hitTarget(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!item.parentNode) return;
+                clearTimeout(targetTimer);
+                const r = item.getBoundingClientRect();
+                addScore(1, r.left + r.width/2, r.top + r.height/2);
+                item.remove();
+                targetTimer = setTimeout(spawnTarget, 250);
+            }
+
+            item.addEventListener('touchstart', hitTarget, {passive: false});
+            item.addEventListener('mousedown', hitTarget);
+
+            container.appendChild(item);
+
+            targetTimer = setTimeout(() => {
+                if (item.parentNode && gameRunning) {
+                    item.remove();
+                    playWrong();
+                    spawnTarget();
+                }
+            }, diff.targetTime);
+        }
+
+        // =========================================================
+        // =================== وضع الأرقام بالترتيب ================
+        // =========================================================
+        function setupNumbersMode() {
+            const diff = getDifficultySettings();
+            maxNumber = diff.numbersCount;
+            currentNumber = 1;
+            numberTarget.style.display = 'block';
+            updateNumberTarget();
+            spawnNumbers();
+        }
+
+        function updateNumberTarget() {
+            numberTarget.textContent = `اضغط: ${currentNumber}`;
+        }
+
+        function spawnNumbers() {
+            if (!gameRunning) return;
+
+            document.querySelectorAll('.number-item').forEach(n => n.remove());
+            numberElements = [];
+
+            const diff = getDifficultySettings();
+            const count = maxNumber;
+            const positions = [];
+            const colors = playerGender === 'girl'
+                ? ['#E91E63', '#9C27B0', '#673AB7', '#3F51B5', '#2196F3', '#00BCD4', '#009688', '#4CAF50', '#FF9800']
+                : ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#34495e', '#16a085'];
+
+            const size = diff.numberSize;
+
+            for (let i = 1; i <= count; i++) {
+                const item = document.createElement('div');
+                item.className = 'number-item';
+                item.textContent = i;
+                item.dataset.number = i;
+                item.style.backgroundColor = colors[(i - 1) % colors.length];
+                item.style.color = 'white';
+                item.style.width = size + 'px';
+                item.style.height = size + 'px';
+                item.style.fontSize = (size * 0.5) + 'px';
+
+                let x, y, attempts = 0;
+                do {
+                    x = 20 + Math.random() * (window.innerWidth - size - 40);
+                    y = 90 + Math.random() * (window.innerHeight - size - 130);
+                    attempts++;
+                } while (attempts < 60 && positions.some(p => Math.abs(p.x - x) < size + 10 && Math.abs(p.y - y) < size + 10));
+
+                positions.push({x, y});
+                item.style.left = x + 'px';
+                item.style.top = y + 'px';
+
+                function tapNumber(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const num = parseInt(item.dataset.number);
+                    if (num === currentNumber) {
+                        const r = item.getBoundingClientRect();
+                        addScore(1, r.left + r.width/2, r.top + r.height/2);
+                        item.style.opacity = '0.25';
+                        item.style.pointerEvents = 'none';
+                        item.style.transform = 'scale(0.8)';
+                        currentNumber++;
+
+                        if (currentNumber > maxNumber) {
+                            currentNumber = 1;
+                            setTimeout(() => {
+                                if (gameRunning) spawnNumbers();
+                            }, 400);
+                        }
+                        updateNumberTarget();
+                    } else {
+                        playWrong();
+                        item.style.animation = 'shake 0.2s';
+                    }
+                }
+
+                item.addEventListener('touchstart', tapNumber, {passive: false});
+                item.addEventListener('mousedown', tapNumber);
+
+                container.appendChild(item);
+                numberElements.push(item);
+            }
+        }
+
+        // =========================================================
+        // =================== وضع الذاكرة =========================
+        // =========================================================
+        function setupMemoryMode() {
+            memoryRevealed = false;
+            spawnMemoryRound();
+        }
+
+        function spawnMemoryRound() {
+            if (!gameRunning) return;
+
+            document.querySelectorAll('.memory-card').forEach(c => c.remove());
+            memoryCards = [];
+
+            const diff = getDifficultySettings();
+            cardCount = diff.memoryCards;
+
+            memoryTarget = memoryShapes[Math.floor(Math.random() * memoryShapes.length)];
+
+            const positions = [];
+            const correctIndex = Math.floor(Math.random() * cardCount);
+            const size = diff.cardSize;
+
+            for (let i = 0; i < cardCount; i++) {
+                const card = document.createElement('div');
+                card.className = 'memory-card hidden-card';
+                card.style.width = size + 'px';
+                card.style.height = size + 'px';
+                card.style.fontSize = (size * 0.5) + 'px';
+
+                const isCorrect = (i === correctIndex);
+                const shape = isCorrect ? memoryTarget : memoryShapes.filter(s => s !== memoryTarget)[Math.floor(Math.random() * (memoryShapes.length - 1))];
+                card.dataset.shape = shape;
+                card.dataset.correct = isCorrect;
+
+                let x, y, attempts = 0;
+                do {
+                    x = 20 + Math.random() * (window.innerWidth - size - 40);
+                    y = 90 + Math.random() * (window.innerHeight - size - 130);
+                    attempts++;
+                } while (attempts < 60 && positions.some(p => Math.abs(p.x - x) < size + 10 && Math.abs(p.y - y) < size + 10));
+
+                positions.push({x, y});
+                card.style.left = x + 'px';
+                card.style.top = y + 'px';
+                card.textContent = '❓';
+
+                container.appendChild(card);
+                memoryCards.push(card);
+            }
+
+            timerDisplay.style.display = 'block';
+            timerDisplay.textContent = `تذكر: ${memoryTarget}`;
+
+            setTimeout(() => {
+                memoryCards.forEach(card => {
+                    card.textContent = card.dataset.shape;
+                    card.classList.remove('hidden-card');
+                    card.classList.add('revealed');
+                });
+            }, 200);
+
+            setTimeout(() => {
+                if (!gameRunning) return;
+
+                memoryCards.forEach(card => {
+                    card.textContent = '❓';
+                    card.classList.remove('revealed');
+                    card.classList.add('hidden-card');
+                });
+
+                timerDisplay.textContent = `أين ${memoryTarget}؟`;
+                memoryRevealed = true;
+
+                memoryCards.forEach(card => {
+                    function tapCard(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!memoryRevealed || !card.parentNode) return;
+
+                        card.textContent = card.dataset.shape;
+                        card.classList.remove('hidden-card');
+                        card.classList.add('revealed');
+
+                        const r = card.getBoundingClientRect();
+
+                        if (card.dataset.correct === 'true') {
+                            addScore(1, r.left + r.width/2, r.top + r.height/2);
+                            memoryRevealed = false;
+                            setTimeout(() => {
+                                if (gameRunning) spawnMemoryRound();
+                            }, 600);
+                        } else {
+                            playWrong();
+                            setTimeout(() => {
+                                if (card.parentNode) {
+                                    card.textContent = '❓';
+                                    card.classList.remove('revealed');
+                                    card.classList.add('hidden-card');
+                                }
+                            }, 400);
+                        }
+                    }
+
+                    card.addEventListener('touchstart', tapCard, {passive: false});
+                    card.addEventListener('mousedown', tapCard);
+                });
+
+            }, diff.memoryShowTime + 200);
+        }
+
+        // =========================================================
+        // =================== حلقة اللعبة =========================
+        // =========================================================
+        function startModeLoop() {
+            function loop() {
+                if (!gameRunning) return;
+
+                // نحسب الصعوبة في كل مرة عشان تتغير مع المستوى
+                const diff = getDifficultySettings();
+
+                if (currentMode === 'balloons') {
+                    spawnBalloon();
+                    spawnTimer = setTimeout(loop, diff.balloonSpawnRate + Math.random() * 150);
+                }
+                else if (currentMode === 'fruits') {
+                    spawnFallingFruit();
+                    spawnTimer = setTimeout(loop, diff.fruitSpawnRate + Math.random() * 150);
+                }
+                else if (currentMode === 'colors') {
+                    spawnColorBall();
+                    spawnTimer = setTimeout(loop, diff.colorSpawnRate + Math.random() * 150);
+                }
+                else if (currentMode === 'target') {
+                    if (!document.querySelector('.target-item')) spawnTarget();
+                }
+            }
+            loop();
+        }
+
+        // =========================================================
+        // =================== بدء اللعبة ==========================
+        // =========================================================
+        function startGame(mode) {
+            initAudio();
+            currentMode = mode;
+
+            clearItems();
+            colorTarget.style.display = 'none';
+            timerDisplay.style.display = 'none';
+            numberTarget.style.display = 'none';
+            levelInfo.style.display = 'none';
+            fruitBasket.style.display = 'none';
+            container.ontouchmove = null;
+            container.onmousemove = null;
+
+            // تعيين الخلفية حسب الجنس
+            container.className = getRandomBackground();
+
+            if (mode === 'balloons') {
+                modeInstruction.textContent = `🎈 فرقع البالونات يا ${playerName}!`;
+            } else if (mode === 'fruits') {
+                setupFruitBasket();
+                modeInstruction.textContent = `🍎 حرك السلة يا ${playerName}!`;
+            } else if (mode === 'colors') {
+                setupColorMode();
+                modeInstruction.textContent = `🎨 اضغط اللون الصح!`;
+            } else if (mode === 'target') {
+                modeInstruction.textContent = `🎯 اضغط الهدف بسرعة!`;
+            } else if (mode === 'numbers') {
+                modeInstruction.textContent = `🔢 اضغط الأرقام بالترتيب!`;
+            } else if (mode === 'memory') {
+                modeInstruction.textContent = `🧩 تذكر مكان الشكل!`;
+            }
+
+            startScreen.classList.remove('show');
+            gameHud.style.display = 'flex';
+            progressBar.style.display = 'block';
+            modeInstruction.style.display = 'block';
+
+            setTimeout(() => { modeInstruction.style.display = 'none'; }, 2000);
+
+            score = 0;
+            level = 1;
+            levelProgress = 0;
+            cheerCounter = 0;
+            targetPerLevel = 8;
+            photoIndex = 0;
+            currentNumber = 1;
+
+            scoreEl.textContent = '0';
+            levelEl.textContent = '1';
+            updateProgress();
+            updateLevelInfo();
+
+            gameRunning = true;
+
+            if (mode === 'numbers') {
+                setupNumbersMode();
+            } else if (mode === 'memory') {
+                setupMemoryMode();
+            } else if (mode === 'target') {
+                spawnTarget();
+            } else {
+                startModeLoop();
+            }
+        }
+
+        // ===== الأحداث =====
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => startGame(btn.dataset.mode));
+            btn.addEventListener('touchstart', e => { e.preventDefault(); startGame(btn.dataset.mode); }, {passive: false});
+        });
+
+        continueBtn.addEventListener('click', continueGame);
+        continueBtn.addEventListener('touchstart', e => { e.preventDefault(); continueGame(); }, {passive: false});
+
+        soundBtn.addEventListener('click', () => {
+            soundOn = !soundOn;
+            soundBtn.textContent = soundOn ? '🔊' : '🔇';
+        });
+
+        backBtn.addEventListener('click', goHome);
+        backBtn.addEventListener('touchstart', e => { e.preventDefault(); goHome(); }, {passive: false});
+
+        // تسجيل Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>
